@@ -1,7 +1,12 @@
 import re
 
+# userInput = input("input:")
+userInput = '4*(8+2)'
+
 separators = re.compile(r'([+\-*/()])')
 operator = {'(': 0, '+': 5, '-': 5, '*': 10, '/': 10}
+
+postfixStack = []
 
 
 class Tree:
@@ -9,7 +14,6 @@ class Tree:
         self.data = data
         self.left = None
         self.right = None
-        self.parent = None
 
     def isNumber(self):
         return self.data.isdigit()
@@ -17,9 +21,29 @@ class Tree:
     def isOperator(self):
         return self.data in operator
 
+    def displayInfix(self):
+        if self.left is not None:
+            print('(', end='')
+            self.left.displayInfix()
+        print(self.data, end='')
+        if self.right is not None:
+            self.right.displayInfix()
+            print(')', end='')
+        
 
-def isOperator(data):
-    return data in operator
+    def displayPostfix(self):
+        if self.left is not None:
+            self.left.displayPostfix()
+        if self.right is not None:
+            self.right.displayPostfix()
+        print(self.data, end='')
+
+    def displayPrefix(self):
+        print(self.data, end='')
+        if self.left is not None:
+            self.left.displayPrefix()
+        if self.right is not None:
+            self.right.displayPrefix()
 
 
 def infixToPostfix(infix):
@@ -56,27 +80,22 @@ def createTreeWithPosfix(current, postfix):
     createTreeWithPosfix(current.left, postfix)
 
 
-def displayTree(tree):
-    if tree.left is not None:
-        displayTree(tree.left)
-    print(tree.data)
-    if tree.right is not None:
-        displayTree(tree.right)
 
-
-# userInput = input("input:")
-userInput = '(8+2)*4'
-
-
-postfixStack = []
 
 
 infix = list(filter(None, separators.split(userInput)))
-print("Infix:", infix)
 infixToPostfix(infix)
-print("Postfix:", postfixStack)
+print("InfixList:", infix)
+print("PostfixStack:", postfixStack)
 
 
 root = Tree()
 createTreeWithPosfix(root, postfixStack)
-displayTree(root)
+print("\nInfix: ")
+root.displayInfix()
+print("\n\nPostfix: ")
+root.displayPostfix()
+print("\n\nPrefix: ")
+root.displayPrefix()
+print()
+print()
