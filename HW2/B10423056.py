@@ -1,25 +1,25 @@
 import re
 
-# userInput = input("input:")
-userInput = '((8+2)*4)'
-
 separators = re.compile(r'([+\-*/()])')
-operator = { '(':0, '+': 5, '-': 5,'*': 10, '/': 10}
-
-postfixStack = []
+operator = {'(': 0, '+': 5, '-': 5, '*': 10, '/': 10}
 
 
 class Tree:
-    def __init__(self, data):
+    def __init__(self, data=None):
         self.data = data
         self.left = None
         self.right = None
+        self.parent = None
 
     def isNumber(self):
         return self.data.isdigit()
 
     def isOperator(self):
         return self.data in operator
+
+
+def isOperator(data):
+    return data in operator
 
 
 def infixToPostfix(infix):
@@ -43,8 +43,40 @@ def infixToPostfix(infix):
         postfixStack.append(tempStack.pop())
 
 
-# root = Tree()
+def createTreeWithPosfix(current, postfix):
+    current.data = postfix.pop()
+
+    if not postfix or not current.isOperator():
+        return
+
+    current.right = Tree()
+    createTreeWithPosfix(current.right, postfix)
+
+    current.left = Tree()
+    createTreeWithPosfix(current.left, postfix)
+
+
+def displayTree(tree):
+    if tree.left is not None:
+        displayTree(tree.left)
+    print(tree.data)
+    if tree.right is not None:
+        displayTree(tree.right)
+
+
+# userInput = input("input:")
+userInput = '(8+2)*4'
+
+
+postfixStack = []
+
+
 infix = list(filter(None, separators.split(userInput)))
-print(infix)
+print("Infix:", infix)
 infixToPostfix(infix)
-print("Postfix:",postfixStack)
+print("Postfix:", postfixStack)
+
+
+root = Tree()
+createTreeWithPosfix(root, postfixStack)
+displayTree(root)
