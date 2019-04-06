@@ -9,11 +9,13 @@
 輸出樹狀結構圖的部分需要用到Graphviz2.38
 '''
 
-import re
-import os
+import re, os
 
-OPERATOR = {'(': 0, '+': 5, '-': 5, '*': 10, '/': 10}
+# 運算子的權重
+OPERATOR = {'(': 0, ')': 0, '+': 5, '-': 5, '*': 10, '/': 10}
+FILENAME = "treeGraph"
 
+separators = re.compile(r'([+\-*/()])')
 
 class Node:
     id_count = 0
@@ -97,18 +99,16 @@ class Node:
 
     # BFS練習
     def getBFS(self):
-        bfsResult = []
+        result = []
         queue = []
         queue.append(self)
-        id_count = 0
         while(queue):
             current = queue.pop(0)
-            bfsResult.append(current)
-            id_count += 1
+            result.append(current)
             if(current.isOperator()):
                 queue.append(current.left)
                 queue.append(current.right)
-        return bfsResult
+        return result
 
 
 def infixToPostfix(infix):
@@ -149,12 +149,10 @@ def createTreeWithPosfix(currentNode, postfixStack):
 
 
 # Create tree structure graph with graphviz
-def generateTreeGraph(root):
+def generateTreeGraph(tree):
     treeStringResult = 'graph {\n  size="7,5";\n  node [color=goldenrod2, style=filled];\n  '
 
-    bfs = root.getBFS()  # 不一定需要使用BFS
-
-    for node in bfs:
+    for node in tree:
         # create label with unique id
         treeStringResult += node.id + ' [label="' + node.data + '"];\n  '
 
@@ -166,36 +164,40 @@ def generateTreeGraph(root):
 
     treeStringResult = treeStringResult.rstrip() + "\n}"  # Close
 
-    # Write to file
-    fileName = 'treeGraph.dot'
-    myfile = open(fileName, 'w')
+    # Write to the dot file
+    dotFileName = FILENAME + '.dot'
+    myfile = open(dotFileName, 'w')
+    print("Writing " + dotFileName + "...")
     myfile.write(treeStringResult)
     myfile.close()
 
     # Run command
     print("Generating tree Graph...")
-    os.system(".\\Graphviz2.38\\bin\\dot.exe -Tpng treeGraph.dot -o treeGraph.png")
-    print("Successfully write the " + fileName + " file")
+    pngFileName = FILENAME + '.png'
+    os.system(".\\Graphviz2.38\\bin\\dot.exe -Tpng " +
+              dotFileName + " -o " + pngFileName)
+    print("Successfully generate the " + pngFileName + " Image")
 
     print("Opening image...")
     os.system("treeGraph.png")
     print("DONE. \n\n")
 
-    # print(treeStringResult)
-
 
 userInput = input("請輸入中序算術式: ").replace(" ", "")
-# userInput = '(((8+11)-(6*4))/((20-15)*6))'
+# userInput = '(((8+11)-(6*4))/((20-15)*6))' # For Testing
 
-separators = re.compile(r'([+\-*/()])')
 
 # 用separators切割并保留，這是考慮到有小數點的可能而使用的切割法
 infix = list(filter(None, separators.split(userInput)))
-print(infix)
+# print(infix)
 
+# 將輸入的中序轉換成後序
 postfixStack = infixToPostfix(infix)
 
-root = Node()  # Crete root
+# Crete root
+root = Node()  
+
+# 利用後序建樹
 createTreeWithPosfix(root, postfixStack)
 
 print("\nInfix: ", root.getInfixText(), end="\n\n")
@@ -206,4 +208,6 @@ print("Prefix: ", root.getPrefixText(), end="\n\n")
 
 print("Result: ", root.getResult(), end="\n\n")
 
-generateTreeGraph(root)
+
+bfs = root.getBFS()  # 也可以使用 getPrefix, getPostfix 和 getBFS ，但 getInfix 不行！
+generateTreeGraph(bfs)
