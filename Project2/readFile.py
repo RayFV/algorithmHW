@@ -12,7 +12,6 @@ def getNumberDataList():
             break
         splitedList = line.split(" ")
         del splitedList[-1] #remove '\n'
-        splitedList = list(map(int, splitedList)) # convert to int
         allData += splitedList
     dataFile.close()
-    return allData
+    return list(map(int, allData)) # convert to int
